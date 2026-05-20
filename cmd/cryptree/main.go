@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -141,9 +142,7 @@ func runEncrypt(cmd *EncryptCmd) {
 				fatal("encrypt: %v", err)
 			}
 			sf.Created = existing.Created
-			for k, v := range existing.Attributes {
-				sf.Attributes[k] = v
-			}
+			maps.Copy(sf.Attributes, existing.Attributes)
 		}
 	} else if !os.IsNotExist(statErr) {
 		fatal("encrypt: %v", statErr)

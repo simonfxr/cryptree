@@ -57,10 +57,7 @@ func Encrypt(plaintext []byte, recipients []string) (string, error) {
 	encoded := base64.StdEncoding.EncodeToString(buf.Bytes())
 	var wrapped strings.Builder
 	for i := 0; i < len(encoded); i += 76 {
-		end := i + 76
-		if end > len(encoded) {
-			end = len(encoded)
-		}
+		end := min(i+76, len(encoded))
 		wrapped.WriteString(encoded[i:end])
 		wrapped.WriteByte('\n')
 	}
