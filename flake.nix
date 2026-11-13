@@ -15,7 +15,7 @@
       flib = flake-utils.lib;
       pkg =
         pkgs:
-        pkgs.buildGo126Module {
+        pkgs.buildGo127Module {
           name = "cryptree";
           version = "0.0.1";
           src = pkgs.lib.fileset.toSource {
@@ -26,7 +26,7 @@
               (pkgs.lib.fileset.fileFilter (f: f.hasExt "go") ./.)
             ];
           };
-          vendorHash = "sha256-QEl9EIoiVdNY/ASsohcMWicZ58yGISZOOZu3t3PVR9s=";
+          vendorHash = "sha256-Qw2OKs8ntwYhwmPdtZ6FwTwiiu5IWaowANDiD8kNw+U=";
           env.CGO_ENABLED = "0";
           ldflags = [
             "-s"
@@ -49,7 +49,7 @@
         packages.cryptree = pkg pkgs;
         devShells.default = pkgs.mkShell {
           packages = [
-            pkgs.go_1_26
+            pkgs.go_1_27
             pkgs.gopls
           ];
         };

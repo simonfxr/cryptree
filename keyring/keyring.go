@@ -16,6 +16,9 @@ func KeysDir() (string, error) {
 }
 
 func Generate(name string) (*age.X25519Identity, error) {
+	if name != "" && (!filepath.IsLocal(name) || name == "." || strings.ContainsAny(name, `/\`)) {
+		return nil, fmt.Errorf("invalid key name %q: must be a filename, not a path", name)
+	}
 	id, err := age.GenerateX25519Identity()
 	if err != nil {
 		return nil, err
@@ -29,12 +32,23 @@ func Generate(name string) (*age.X25519Identity, error) {
 		return nil, err
 	}
 	path := filepath.Join(dir, name+".key")
-	if _, err := os.Stat(path); err == nil {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if os.IsExist(err) {
 		return nil, fmt.Errorf("key %q already exists", name)
 	}
-	data := fmt.Sprintf("# public key: %s\n%s\n", id.Recipient(), id)
-	if err := os.WriteFile(path, []byte(data), 0600); err != nil {
+	if err != nil {
 		return nil, err
+	}
+	data := fmt.Sprintf("# public key: %s\n%s\n", id.Recipient(), id)
+	_, writeErr := f.WriteString(data)
+	closeErr := f.Close()
+	if writeErr != nil {
+		os.Remove(path)
+		return nil, writeErr
+	}
+	if closeErr != nil {
+		os.Remove(path)
+		return nil, closeErr
 	}
 	return id, nil
 }

@@ -52,11 +52,27 @@ func Parse(path string) ([]string, error) {
 }
 
 func Append(path string, pubkey string) error {
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	_, err = fmt.Fprintf(f, "%s\n", pubkey)
-	return err
+	info, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	prefix := ""
+	if info.Size() > 0 {
+		var last [1]byte
+		if _, err := f.ReadAt(last[:], info.Size()-1); err != nil {
+			return err
+		}
+		if last[0] != '\n' {
+			prefix = "\n"
+		}
+	}
+	if _, err := fmt.Fprintf(f, "%s%s\n", prefix, pubkey); err != nil {
+		return err
+	}
+	return f.Close()
 }

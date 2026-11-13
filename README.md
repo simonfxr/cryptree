@@ -85,7 +85,7 @@ Key files use `0600` permissions, the directory uses `0700`.
 
 Generates an age X25519 keypair and stores it in the keyring. Prints the public key to stdout.
 
-- `--name <label>` — custom filename for the key (default: derived from public key)
+- `--name <label>` — custom filename for the key, without directory separators (default: derived from public key)
 - `--add-recipient` — append the public key to the nearest `.cryptree_recipients`
 - `--re-encrypt` — re-encrypt all secrets in the tree with the updated recipient list
 
@@ -123,6 +123,6 @@ Re-encrypts secrets whose stored recipients differ from the current `.cryptree_r
 # With Nix
 nix build
 
-# With Go
+# With Go 1.27 or later
 go build ./cmd/cryptree
 ```

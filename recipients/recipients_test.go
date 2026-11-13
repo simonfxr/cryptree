@@ -26,6 +26,39 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestAppendPreservesLineBoundaries(t *testing.T) {
+	for _, initial := range []string{"", "key1", "key1\n", "key1\r\n", "# comment"} {
+		t.Run(initial, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), FileName)
+			if err := os.WriteFile(path, []byte(initial), 0644); err != nil {
+				t.Fatal(err)
+			}
+			if err := Append(path, "key2"); err != nil {
+				t.Fatal(err)
+			}
+			want := initial
+			if want != "" && want[len(want)-1] != '\n' {
+				want += "\n"
+			}
+			want += "key2\n"
+			got, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(got) != want {
+				t.Fatalf("got %q, want %q", got, want)
+			}
+			keys, err := Parse(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(keys) == 0 || keys[len(keys)-1] != "key2" {
+				t.Fatalf("appended recipient missing: %v", keys)
+			}
+		})
+	}
+}
+
 func TestResolveWalksUp(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, FileName), []byte("parentkey\n"), 0644)
